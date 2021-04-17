@@ -1,6 +1,2 @@
-// package murum
+// Package murum contains the
 package murum
-
-func murum() {
-	//
-}
