@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Nightmarlin/murum/layout"
+	"github.com/nightmarlin/murum/layout"
 	"go.uber.org/zap"
 )
 

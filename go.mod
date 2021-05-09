@@ -1,4 +1,4 @@
-module github.com/Nightmarlin/murum
+module github.com/nightmarlin/murum
 
 go 1.16
 
