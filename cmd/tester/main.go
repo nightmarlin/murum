@@ -12,40 +12,34 @@ import (
 	"time"
 
 	"github.com/nightmarlin/murum/layout"
+
 	"go.uber.org/zap"
 )
 
-// colors generates a set of random colors to fill a voronoi chart with
-func colors(n int) []color.RGBA {
+func init() {
 	rand.Seed(time.Now().Unix())
-
-	var c []color.RGBA
-	for i := 0; i < n; i++ {
-		c = append(c, color.RGBA{
-			R: uint8(rand.Intn(0xFF)),
-			G: uint8(rand.Intn(0xFF)),
-			B: uint8(rand.Intn(0xFF)),
-			A: 0xFF,
-		})
-	}
-	return c
 }
 
 func DrawVoronoi(log *zap.SugaredLogger, rect image.Rectangle, allPoints []image.Point) *image.RGBA {
 	img := image.NewRGBA(rect)
-	regions, err := layout.Generate(rect, allPoints)
+	l, err := layout.Generate(rect, allPoints)
 	if err != nil {
-		log.Errorw("failed to generate regions", zap.Error(err))
+		log.Errorw("failed to generate l", zap.Error(err))
 		return nil
 	}
 
-	c := colors(len(regions))
-	for i := range regions {
-		regionColor := c[i]
-
-		for _, p := range regions[i].Pixels() {
+	n := 0
+	for _, points := range l {
+		regionColor := color.RGBA{
+			R: uint8(rand.Intn(0xFF)),
+			G: uint8(rand.Intn(0xFF)),
+			B: uint8(rand.Intn(0xFF)),
+			A: 0xFF,
+		}
+		for _, p := range points {
 			img.Set(p.X, p.Y, regionColor)
 		}
+		n += 1
 	}
 
 	return img
@@ -55,6 +49,7 @@ func main() {
 	l, err := zap.NewDevelopment()
 	if err != nil {
 		_, _ = fmt.Fprint(os.Stderr, "failed to initialise logger")
+		fmt.Errorf("")
 		return
 	}
 	log := l.Sugar().Named("murum-tester")
@@ -84,7 +79,7 @@ func main() {
 		log.Errorw("unable to create file", zap.Error(err))
 		return
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	err = png.Encode(f, img)
 	if err != nil {

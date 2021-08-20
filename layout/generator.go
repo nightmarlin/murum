@@ -6,54 +6,43 @@ package layout
 import (
 	"errors"
 	"image"
-	"sync"
+	"math"
 )
 
-// generatorWorker allows for parallelization of pixel processing. Each worker calculates the nearest point in allPoints
-// and then adds the current pixel
-func generatorWorker(
-	wg *sync.WaitGroup,
-	layout *L,
-	pixels <-chan image.Point,
-) {
-	defer wg.Done()
-	if layout == nil {
-		return
+type L map[image.Point][]image.Point
+
+// Generate creates an L map, where each key is a single value from centerPoints and its
+// corresponding value is the set of all points closest to the key. If two centerPoints have equal
+// distance, the first point in centerPoints will be used.
+func Generate(rect image.Rectangle, centerPoints []image.Point) (L, error) {
+	if len(centerPoints) == 0 {
+		return nil, errors.New("centerPoints must have at least one element")
 	}
 
-	for p := range pixels {
-		ref := getNearestPoint(p, *layout)
-		layout.addClosestPixel(ref, p)
-	}
-}
-
-// Generate creates a layout.L slice. Each Region in the returned L will have a center in allPoints and contain the
-// points in rect closest to that centre.
-func Generate(rect image.Rectangle, allPoints []image.Point) (L, error) {
-	if len(allPoints) == 0 {
-		return nil, errors.New("allPoints cannot be nil or 0-length")
-	}
-
-	var layout L
-	for _, ref := range allPoints {
-		layout = append(layout, Region{center: ref})
-	}
-
-	wg := &sync.WaitGroup{}
-	pixels := make(chan image.Point)
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go generatorWorker(wg, &layout, pixels)
-	}
-
+	l := L{}
 	for x := rect.Min.X; x < rect.Max.X; x++ {
 		for y := rect.Min.Y; y < rect.Max.Y; y++ {
-			pixels <- image.Point{X: x, Y: y}
+			p := image.Point{X: x, Y: y}
+
+			nearest := centerPoints[0]
+			for i := 1; i < len(centerPoints); i++ {
+				if distance(p, centerPoints[i]) < distance(p, nearest) {
+					nearest = centerPoints[i]
+				}
+			}
+
+			l[nearest] = append(l[nearest], p)
 		}
 	}
 
-	close(pixels)
-	wg.Wait()
+	return l, nil
+}
 
-	return layout, nil
+// distance performs a simple pythagorean calculation:
+//   a^2 + b^2 = c^2
+//   ∴ c = |sqrt(a^2 + b^2)|
+// a here is the x-difference and b is the y-difference
+func distance(p1, p2 image.Point) float64 {
+	// math.Sqrt is always > 0. Or NaN. Probably won't be NaN (no complex numbers here!)
+	return math.Sqrt(math.Pow(float64(p2.X-p1.X), 2) + math.Pow(float64(p2.Y-p1.Y), 2))
 }

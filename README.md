@@ -6,6 +6,23 @@ murum generates wallpapers for your machine!
 
 ## Usage
 
+### Installation
+
+```shell
+$ murum install
+```
+
+This will install the murum daemon and guide you through set up
+
+### Configuration
+
+```shell
+$ murum config [...]
+```
+
+You can use the config wizard to go through and edit your murum configuration. Alternatively you can open
+`~/.murumcfg.json`
+
 ## How it works
 
 To put it simply, murum gets the album art for your recent listening history, figures out some canvas sizes, works out
