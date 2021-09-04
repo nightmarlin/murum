@@ -9,17 +9,20 @@ import (
 	"math"
 )
 
-type L map[image.Point][]image.Point
+type L struct {
+	Bounds image.Rectangle
+	Points map[image.Point][]image.Point
+}
 
 // Generate creates an L map, where each key is a single value from centerPoints and its
 // corresponding value is the set of all points closest to the key. If two centerPoints have equal
 // distance, the first point in centerPoints will be used.
-func Generate(rect image.Rectangle, centerPoints []image.Point) (L, error) {
+func Generate(rect image.Rectangle, centerPoints []image.Point) (*L, error) {
 	if len(centerPoints) == 0 {
 		return nil, errors.New("centerPoints must have at least one element")
 	}
 
-	l := L{}
+	l := &L{Bounds: rect, Points: make(map[image.Point][]image.Point)}
 	for x := rect.Min.X; x < rect.Max.X; x++ {
 		for y := rect.Min.Y; y < rect.Max.Y; y++ {
 			p := image.Point{X: x, Y: y}
@@ -31,7 +34,7 @@ func Generate(rect image.Rectangle, centerPoints []image.Point) (L, error) {
 				}
 			}
 
-			l[nearest] = append(l[nearest], p)
+			l.Points[nearest] = append(l.Points[nearest], p)
 		}
 	}
 

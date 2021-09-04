@@ -8,14 +8,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func assertEqualL(t *testing.T, expect, actual L) bool {
-	if !assert.Equal(t, len(expect), len(actual), "map lengths must match") {
+func assertEqualL(t *testing.T, expect, actual *L) bool {
+	if !assert.Equal(t, expect.Bounds, actual.Bounds, "bounding rectangles must match") {
 		return false
 	}
 
-	for eKey := range expect {
+	if !assert.Equal(t, len(expect.Points), len(actual.Points), "map lengths must match") {
+		return false
+	}
+
+	for eKey := range expect.Points {
 		found := false
-		for aKey := range actual {
+		for aKey := range actual.Points {
 			if eKey == aKey {
 				found = true
 				break
@@ -32,8 +36,8 @@ func assertEqualL(t *testing.T, expect, actual L) bool {
 
 		if !assert.ElementsMatchf(
 			t,
-			expect[eKey],
-			actual[eKey],
+			expect.Points[eKey],
+			actual.Points[eKey],
 			"slices under entry %v must match", eKey,
 		) {
 			return false
@@ -50,7 +54,7 @@ func TestGenerate(t *testing.T) {
 		Rect   image.Rectangle
 		Points []image.Point
 
-		ExpectRes L
+		ExpectRes *L
 		ExpectErr error
 	}{
 		{
@@ -69,19 +73,22 @@ func TestGenerate(t *testing.T) {
 			Name:   "succeeds under normal circumstances",
 			Rect:   image.Rectangle{Max: image.Point{X: 3, Y: 3}},
 			Points: []image.Point{{X: 0, Y: 0}, {X: 2, Y: 2}},
-			ExpectRes: L{
-				{X: 0, Y: 0}: {
-					{X: 0, Y: 0},
-					{X: 0, Y: 1},
-					{X: 0, Y: 2},
-					{X: 1, Y: 0},
-					{X: 1, Y: 1},
-					{X: 2, Y: 0},
-				},
-				{X: 2, Y: 2}: {
-					{X: 1, Y: 2},
-					{X: 2, Y: 1},
-					{X: 2, Y: 2},
+			ExpectRes: &L{
+				Bounds: image.Rectangle{Max: image.Point{X: 3, Y: 3}},
+				Points: map[image.Point][]image.Point{
+					{X: 0, Y: 0}: {
+						{X: 0, Y: 0},
+						{X: 0, Y: 1},
+						{X: 0, Y: 2},
+						{X: 1, Y: 0},
+						{X: 1, Y: 1},
+						{X: 2, Y: 0},
+					},
+					{X: 2, Y: 2}: {
+						{X: 1, Y: 2},
+						{X: 2, Y: 1},
+						{X: 2, Y: 2},
+					},
 				},
 			},
 		},
