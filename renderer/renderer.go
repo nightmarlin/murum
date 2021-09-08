@@ -40,7 +40,11 @@ func GetBounds(ps []image.Point) image.Rectangle {
 		}
 	}
 
-	return image.Rectangle{Min: min, Max: max}
+	return image.Rectangle{
+		Min: min,
+		// Add {1, 1} as image.Rectangle max values are exclusive
+		Max: max.Add(image.Point{X: 1, Y: 1}),
+	}
 }
 
 // ScaleRect scales a rectangle to fill at least the area of some target rectangle while maintaining

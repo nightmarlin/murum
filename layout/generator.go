@@ -21,6 +21,7 @@ func Generate(rect image.Rectangle, centerPoints []image.Point) (*L, error) {
 	if len(centerPoints) == 0 {
 		return nil, errors.New("centerPoints must have at least one element")
 	}
+	rect = rect.Canon()
 
 	l := &L{Bounds: rect, Points: make(map[image.Point][]image.Point)}
 	for x := rect.Min.X; x < rect.Max.X; x++ {

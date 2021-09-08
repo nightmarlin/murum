@@ -78,13 +78,22 @@ func (b *basicRenderer) Render(l *layout.L, ai []provider.AlbumInfo) (image.Imag
 			break
 		}
 
-		sectBounds := GetBounds(section)
-		sectImg := b.resize(ai[n].Art, sectBounds)
-		// TODO: Recenter image to fill from centre
+		var (
+			sectBounds = GetBounds(section)
+			sectImg    = b.resize(ai[n].Art, sectBounds)
+
+			// TODO: Center image correctly
+			// xCenteredOffset = (sectBounds.Dx() - sectImg.Bounds().Dx()) / 2 // (BoundsDX - ImgDX)/2
+			// yCenteredOffset = (sectBounds.Dy() - sectImg.Bounds().Dy()) / 2
+		)
 		n++
 
 		for _, p := range section {
-			col := sectImg.At(p.X-sectBounds.Min.X, p.Y-sectBounds.Min.Y)
+			// TODO: Ensure image correctly fills region.
+			col := sectImg.At(
+				p.X-sectBounds.Min.X, // +xCenteredOffset,
+				p.Y-sectBounds.Min.Y, // +yCenteredOffset,
+			)
 			resImg.Set(p.X, p.Y, col)
 		}
 	}
