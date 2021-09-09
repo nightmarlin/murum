@@ -82,20 +82,20 @@ func (b *basicRenderer) Render(l *layout.L, ai []provider.AlbumInfo) (image.Imag
 			sectBounds = GetBounds(section)
 			sectImg    = b.resize(ai[n].Art, sectBounds)
 
-			// TODO: Center image correctly
-			// xCenteredOffset = (sectBounds.Dx() - sectImg.Bounds().Dx()) / 2 // (BoundsDX - ImgDX)/2
-			// yCenteredOffset = (sectBounds.Dy() - sectImg.Bounds().Dy()) / 2
+			// Center image
+			xCenteredOffset = (sectImg.Bounds().Dx() - sectBounds.Dx()) / 2
+			yCenteredOffset = (sectImg.Bounds().Dy() - sectBounds.Dy()) / 2
 		)
-		n++
 
 		for _, p := range section {
-			// TODO: Ensure image correctly fills region.
 			col := sectImg.At(
-				p.X-sectBounds.Min.X, // +xCenteredOffset,
-				p.Y-sectBounds.Min.Y, // +yCenteredOffset,
+				p.X-sectBounds.Min.X+xCenteredOffset,
+				p.Y-sectBounds.Min.Y+yCenteredOffset,
 			)
 			resImg.Set(p.X, p.Y, col)
 		}
+
+		n += 1
 	}
 
 	return resImg, nil

@@ -86,6 +86,10 @@ func main() {
 					A: 255,
 				},
 				base,
+				image.Rectangle{
+					Min: image.Point{X: 480, Y: 270},
+					Max: image.Point{X: 1440, Y: 810},
+				},
 			),
 		}
 	}
@@ -125,8 +129,9 @@ func main() {
 // BoundedUniform is a bounded Image of uniform color.
 // It implements the color.Color, color.Model, and Image interfaces.
 type BoundedUniform struct {
-	C color.Color
-	B image.Rectangle
+	C   color.Color
+	B   image.Rectangle
+	Not image.Rectangle
 }
 
 func (bu *BoundedUniform) RGBA() (r, g, b, a uint32)       { return bu.C.RGBA() }
@@ -134,6 +139,9 @@ func (bu *BoundedUniform) ColorModel() color.Model         { return bu }
 func (bu *BoundedUniform) Convert(color.Color) color.Color { return bu.C }
 func (bu *BoundedUniform) Bounds() image.Rectangle         { return bu.B }
 func (bu *BoundedUniform) At(x, y int) color.Color {
+	if (image.Point{X: x, Y: y}.In(bu.Not)) {
+		return color.Transparent
+	}
 	if (image.Point{X: x, Y: y}.In(bu.B)) {
 		return bu.C
 	}
@@ -147,6 +155,6 @@ func (bu *BoundedUniform) Opaque() bool {
 	_, _, _, a := bu.C.RGBA()
 	return a == 0xffff
 }
-func NewBoundedUniform(c color.Color, bounds image.Rectangle) *BoundedUniform {
-	return &BoundedUniform{C: c, B: bounds.Canon()}
+func NewBoundedUniform(c color.Color, bounds, trans image.Rectangle) *BoundedUniform {
+	return &BoundedUniform{C: c, B: bounds.Canon(), Not: trans.Canon()}
 }
