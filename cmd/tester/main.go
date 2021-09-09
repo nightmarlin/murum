@@ -2,7 +2,6 @@
 package main
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"image/png"
@@ -22,7 +21,7 @@ import (
 func main() {
 	log, err := zap.NewDevelopment()
 	if err != nil {
-		_, _ = fmt.Fprint(os.Stderr, "failed to initialise logger")
+		_, _ = os.Stderr.WriteString("failed to initialise logger")
 		return
 	}
 	log = log.Named("murum-tester")
@@ -43,16 +42,18 @@ func main() {
 	var (
 		xCount, yCount = 16, 9
 		base           = image.Rect(0, 0, 1920, 1080)
+		randSRC        = rand.NewSource(time.Now().Unix())
+
+		// layout.RandomPlacer(randSRC).Place(base, xCount, yCount)
+		// layout.EvenPlacer().Place(base, xCount, yCount)
+		placements = layout.VariedPlacer(
+			image.Rectangle{Min: image.Point{X: -25, Y: -25}, Max: image.Point{X: 25, Y: 25}},
+			randSRC,
+		).
+			Place(base, xCount, yCount)
 	)
 
 	log.Info("generating layout", zap.Int("x_count", xCount), zap.Int("y_count", yCount), zap.Any("rect", base))
-	randSRC := rand.NewSource(time.Now().Unix())
-	// layout.RandomPlacer(randSRC).Place(base, xCount, yCount)
-	// layout.EvenPlacer().Place(base, xCount, yCount)
-	placements := layout.VariedPlacer(
-		image.Rectangle{Min: image.Point{X: -25, Y: -25}, Max: image.Point{X: 25, Y: 25}},
-		randSRC,
-	).Place(base, xCount, yCount)
 	l, err := layout.Generate(base, placements)
 	if err != nil {
 		log.Error("failed to create layout", zap.Error(err))

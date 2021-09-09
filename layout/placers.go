@@ -8,7 +8,7 @@ import (
 
 // Placer allows points to be placed on an image.Rectangle
 type Placer interface {
-	// Place takes an image.Rectangle and calculates where best to place xCount*yCount center points.
+	// Place takes an image.Rectangle and calculates where best to place xCount*yCount nearestCenter points.
 	// If xCount == 0 or yCount == 0, the following expression should resolve to true:
 	//   len(Place(rect, xCount, yCount)) == 0
 	// A Placer should support rectangles with negative regions
@@ -106,7 +106,7 @@ func TriangularPlacer() *triangularPlacer { return &triangularPlacer{} }
 // TODO: Triangular (to create hexagonal voronoi cells)
 type triangularPlacer struct{}
 
-// WeightedPlacer creates and returns a Placer that pushes/pulls points to/from a given center
+// WeightedPlacer creates and returns a Placer that pushes/pulls points to/from a given nearestCenter
 // point. It is based on the EvenPlacer, and then moves points to create the gravitational effect.
 func WeightedPlacer(center image.Point, gravity float64) *weightedPlacer {
 	return &weightedPlacer{center: center, gravity: gravity}
