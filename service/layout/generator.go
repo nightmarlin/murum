@@ -49,9 +49,9 @@ func goGenerate(centerPoints []image.Point, in <-chan image.Point, out chan<- po
 // Generate creates an L map, where each key is a single value from centerPoints and its
 // corresponding value is the set of all points closest to the key. If two centerPoints have equal
 // distance, the first point in centerPoints will be used.
-func Generate(rect image.Rectangle, centerPoints []image.Point) (*L, error) {
+func Generate(rect image.Rectangle, centerPoints []image.Point) (L, error) {
 	if len(centerPoints) == 0 {
-		return nil, errors.New("centerPoints must have at least one element")
+		return L{}, errors.New("centerPoints must have at least one element")
 	}
 
 	var (
@@ -60,7 +60,7 @@ func Generate(rect image.Rectangle, centerPoints []image.Point) (*L, error) {
 		outChan    = make(chan pointPair)
 
 		ready = make(chan struct{}, 1)
-		l     = &L{Bounds: rect.Canon(), Points: make(map[image.Point][]image.Point)}
+		l     = L{Bounds: rect.Canon(), Points: make(map[image.Point][]image.Point)}
 	)
 
 	// Spin up GoRoutines
@@ -95,8 +95,10 @@ func Generate(rect image.Rectangle, centerPoints []image.Point) (*L, error) {
 }
 
 // distance performs a simple pythagorean calculation:
-//   a^2 + b^2 = c^2
-//   ∴ c = |sqrt(a^2 + b^2)|
+//
+//	a^2 + b^2 = c^2
+//	∴ c = |sqrt(a^2 + b^2)|
+//
 // a here is the x-difference and b is the y-difference
 func distance(p1, p2 image.Point) float64 {
 	// math.Sqrt is always > 0. Or NaN. Probably won't be NaN (no complex numbers here!)

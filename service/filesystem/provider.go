@@ -17,12 +17,12 @@ import (
 	"github.com/nightmarlin/murum/provider"
 )
 
-type FSOption func(fp *fsProvider) error
+type FSOption func(fp *FSProvider) error
 
-// WithFilter adds a regex filter to the file search. Only files that match *any* provided filter
+// WithFilter adds a regex filter to the file search. Files that match *any* provided filter
 // will be used.
 func WithFilter(r regexp.Regexp) FSOption {
-	return func(fp *fsProvider) error {
+	return func(fp *FSProvider) error {
 		fp.filters = append(fp.filters, r)
 		return nil
 	}
@@ -30,7 +30,7 @@ func WithFilter(r regexp.Regexp) FSOption {
 
 // WithWorkingDir sets the root directory to search in
 func WithWorkingDir(path string) FSOption {
-	return func(fp *fsProvider) error {
+	return func(fp *FSProvider) error {
 		p, err := filepath.Abs(path)
 		if err != nil {
 			return fmt.Errorf("failed to create absolute path: %w", err)
@@ -57,7 +57,7 @@ func WithWorkingDir(path string) FSOption {
 //   - JPG
 //   - GIF
 func WithExtensions(ext ...string) FSOption {
-	return func(fp *fsProvider) error {
+	return func(fp *FSProvider) error {
 		fp.extensions = append(fp.extensions, ext...)
 		return nil
 	}
@@ -65,7 +65,7 @@ func WithExtensions(ext ...string) FSOption {
 
 // WithDefaults adds the JPG, JPEG and PNG extensions and sets the working directory to the CWD.
 func WithDefaults() FSOption {
-	return func(fp *fsProvider) error {
+	return func(fp *FSProvider) error {
 		_ = WithExtensions("jpg", "jpeg", "png")
 
 		cwd, err := os.Getwd()
@@ -78,7 +78,7 @@ func WithDefaults() FSOption {
 	}
 }
 
-type fsProvider struct {
+type FSProvider struct {
 	// Only files that match any of the provided extensions will be used
 	extensions []string
 	// If present, only file names (excluding extensions) that match any of these filters will be used
@@ -92,12 +92,12 @@ type fsProvider struct {
 // that directory with names of the form "Artist Name - Album Name" will be converted into the
 // corresponding information structure. If WithWorkingDir isn't provided, the current working
 // directory will be used.
-func New(opts ...FSOption) (*fsProvider, error) {
-	fp := &fsProvider{}
+func New(opts ...FSOption) (FSProvider, error) {
+	fp := FSProvider{}
 	for i := range opts {
-		err := opts[i](fp)
+		err := opts[i](&fp)
 		if err != nil {
-			return nil, fmt.Errorf("failed to initialise filesystem provider: %w", err)
+			return FSProvider{}, fmt.Errorf("failed to initialise filesystem source: %w", err)
 		}
 	}
 
@@ -105,7 +105,7 @@ func New(opts ...FSOption) (*fsProvider, error) {
 	if fp.rootDir == "" {
 		cwd, err := os.Getwd()
 		if err != nil {
-			return nil, fmt.Errorf("failed to get cwd: %w", err)
+			return FSProvider{}, fmt.Errorf("failed to get cwd: %w", err)
 		}
 		fp.rootDir = cwd
 	}
@@ -113,7 +113,7 @@ func New(opts ...FSOption) (*fsProvider, error) {
 	return fp, nil
 }
 
-func (fp *fsProvider) listFiles() ([]string, error) {
+func (fp FSProvider) listFiles() ([]string, error) {
 	// Read all files in directory
 	dInfo, err := os.ReadDir(fp.rootDir)
 	if err != nil {
@@ -178,7 +178,7 @@ func extractFromFile(path string) (provider.AlbumInfo, error) {
 	return provider.AlbumInfo{Name: albumName, Artist: artist, Art: img}, nil
 }
 
-func (fp *fsProvider) Fetch(n int) ([]provider.AlbumInfo, error) {
+func (fp FSProvider) Fetch(n int) ([]provider.AlbumInfo, error) {
 	if n <= 0 {
 		return nil, nil
 	}

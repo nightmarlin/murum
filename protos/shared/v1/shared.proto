@@ -1,0 +1,39 @@
+syntax = "proto3";
+package shared;
+option go_package = "sharedv1";
+
+import "google/protobuf/timestamp.proto";
+
+// A TimeRange represents a period of time as follows: after <= T < before.
+message TimeRange {
+  google.protobuf.Timestamp after = 1; // Inclusive
+  google.protobuf.Timestamp before = 2; // Exclusive
+}
+
+// A Point represents an arbitrary point on a 2D plane.
+message Point {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+// A Rect describes the bounding box formed between a pair of Point s.
+//
+//	Rect.min.z <= X < Rect.max.x
+//	Rect.min.y <= Y < Rect.max.y
+message Rect {
+  Point min = 1; // Inclusive
+  Point max = 2; // Exclusive
+}
+
+enum FileType {
+  PNG_FILE_TYPE = 0;
+  JPG_FILE_TYPE = 1;
+  GIF_FILE_TYPE = 2;
+}
+
+// An Image contains the raw data to display a graphic.
+message Image {
+  string name = 1;
+  FileType file_type = 2;
+  bytes image = 3;
+}

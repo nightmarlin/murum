@@ -1,0 +1,69 @@
+syntax = "proto3";
+package orchestra;
+option go_package = "orchestrav1";
+
+import "google/protobuf/timestamp.proto";
+import "shared/v1/shared.proto";
+import "source/v1/source.proto";
+import "source/v1/oauth.proto";
+import "layout/v1/layout.proto";
+import "render/v1/render.proto";
+
+// The OrchestraService acts as a Backend-For-Frontend service, orchestrating
+// API usage so the client doesn't worry about the complexity of the murum
+// backend.
+service OrchestraService {
+  rpc Generate (GenerateRequest) returns (GenerateResponse);
+
+  rpc OAuthGetToken (OAuthGetTokenRequest) returns (OAuthGetTokenResponse);
+  rpc OAuthStartSession (OAuthStartSessionRequest) returns (OAuthStartSessionResponse);
+}
+
+enum Source {
+  LASTFM_SOURCE = 0;
+}
+
+message GenerateRequest {
+  shared.Rect bounds = 1;
+  int32 row_count = 2;
+  int32 column_count = 3;
+
+  Source source = 4;
+  oneof media {
+    source.TracksRequest tracks = 5;
+    source.AlbumsRequest albums = 6;
+    source.ArtistsRequest artists = 7;
+  }
+
+  oneof layout_mode {
+    layout.RandomParams random = 8;
+    layout.EvenParams even = 9;
+    layout.VariedParams varied = 10;
+    layout.TriangularParams triangular = 11;
+    layout.WeightedParams weighted = 12;
+  }
+
+  shared.FileType file_type = 13;
+  oneof render_mode {
+    render.BasicParams basic = 14;
+    render.WithTextParams with_text = 15;
+  }
+}
+
+message GenerateResponse {
+  shared.Image image = 1;
+}
+
+message OAuthGetTokenRequest {
+  Source source = 1;
+  source.GetTokenRequest request = 2;
+}
+message OAuthGetTokenResponse {
+  source.GetTokenResponse response = 1;
+}
+
+message OAuthStartSessionRequest {
+  Source source = 1;
+  source.StartOAuthSessionRequest request = 2;
+}
+message OAuthStartSessionResponse {}

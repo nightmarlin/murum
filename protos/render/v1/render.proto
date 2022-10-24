@@ -1,0 +1,47 @@
+syntax = "proto3";
+package render;
+option go_package = "renderpbv1";
+
+import "layout/v1/layout.proto";
+import "shared/v1/shared.proto";
+
+// The RenderService renders a murum wall.
+service RenderService {
+  rpc Render (RenderRequest) returns (RenderResponse);
+}
+
+message RenderRequest {
+  shared.FileType file_type = 1;
+  layout.Layout layout = 2;
+  repeated shared.Image images = 3;
+
+  oneof mode {
+    BasicParams basic = 4;
+    WithTextParams with_text = 5;
+  }
+}
+
+message BasicParams {
+  // TODO
+}
+
+message Font {
+  string family = 1;
+  string style = 2;
+  float scale_pt = 3;
+}
+
+message WithTextParams {
+  bool show_art = 1;
+  bool show_track = 2;
+  bool show_album = 3;
+  bool show_artist = 4;
+  bool show_play_count = 5;
+
+  Font font = 6;
+}
+
+message RenderResponse {
+  shared.FileType file_type = 1;
+  bytes wall = 2;
+}

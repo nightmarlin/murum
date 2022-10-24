@@ -1,0 +1,66 @@
+syntax = "proto3";
+package layout;
+option go_package = "layoutpbv1";
+
+import "shared/v1/shared.proto";
+
+// The LayoutService provides various methods to generate a Layout.
+service LayoutService {
+  rpc Generate (GenerateRequest) returns (GenerateResponse);
+}
+
+message GenerateRequest {
+  shared.Rect bounds = 1; // How large the image will be.
+  int32 x_count = 2; // How many points to place along the x-axis of the Layout.
+  int32 y_count = 3; // How many points to place along the y-axis of the Layout.
+
+  oneof mode {
+    RandomParams random = 4;
+    EvenParams even = 5;
+    VariedParams varied = 6;
+    TriangularParams triangular = 7;
+    WeightedParams weighted = 8;
+  };
+}
+
+// A Random Layout places the specified number of points randomly within the
+// Bounds.
+message RandomParams {}
+
+// An Even Layout places the specified number of points evenly across the
+// Bounds.
+message EvenParams {}
+
+// A Varied Layout places the points as in Even, but then randomly moves them
+// within the bounds defined by the specified offsets.
+message VariedParams {
+  int32 min_x_offset = 1;
+  int32 min_y_offset = 2;
+  int32 max_x_offset = 3;
+  int32 max_y_offset = 4;
+}
+
+// Triangular layouts are in progress.
+message TriangularParams {
+  // TODO
+}
+
+// Weighted layouts are in progress.
+message WeightedParams {
+  shared.Point center = 1;
+  double gravity = 2;
+}
+
+message Region {
+  shared.Point center = 1;
+  repeated shared.Point members = 2;
+}
+
+message Layout {
+  shared.Rect bounds = 1;
+  repeated Region regions = 2;
+}
+
+message GenerateResponse {
+  Layout layout = 1;
+}

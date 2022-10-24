@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func assertEqualL(t *testing.T, expect, actual *L) bool {
+func assertEqualL(t *testing.T, expect, actual L) bool {
 	if !assert.Equal(t, expect.Bounds, actual.Bounds, "bounding rectangles must match") {
 		return false
 	}
@@ -54,26 +54,26 @@ func TestGenerate(t *testing.T) {
 		Rect   image.Rectangle
 		Points []image.Point
 
-		ExpectRes *L
+		ExpectRes L
 		ExpectErr error
 	}{
 		{
 			Name:      "errors if centerPoints is nil",
 			Points:    nil,
-			ExpectRes: nil,
+			ExpectRes: L{},
 			ExpectErr: errors.New("centerPoints must have at least one element"),
 		},
 		{
 			Name:      "errors if centerPoints is empty",
 			Points:    make([]image.Point, 0),
-			ExpectRes: nil,
+			ExpectRes: L{},
 			ExpectErr: errors.New("centerPoints must have at least one element"),
 		},
 		{
 			Name:   "succeeds under normal circumstances",
 			Rect:   image.Rectangle{Max: image.Point{X: 3, Y: 3}},
 			Points: []image.Point{{X: 0, Y: 0}, {X: 2, Y: 2}},
-			ExpectRes: &L{
+			ExpectRes: L{
 				Bounds: image.Rectangle{Max: image.Point{X: 3, Y: 3}},
 				Points: map[image.Point][]image.Point{
 					{X: 0, Y: 0}: {

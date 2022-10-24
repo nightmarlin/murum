@@ -1,0 +1,91 @@
+syntax = "proto3";
+package source;
+option go_package = "sourcev1";
+
+import "google/protobuf/timestamp.proto";
+import "shared/v1/shared.proto";
+
+// The SourceService obtains artwork and information from various sources.
+service SourceService {
+  rpc Artists (ArtistsRequest) returns (ArtistsResponse);
+  rpc Albums (AlbumsRequest) returns (AlbumsResponse);
+  rpc Tracks (TracksRequest) returns (TracksResponse);
+
+  // All SourceService s must implement this. If it is an OAuthService Source
+  // and the client has not yet performed the OAuth flow, then the client must
+  // first call the OAuthService methods for this SourceService.
+  // If the Service does not implement the OAuthService, then this should always
+  // return true.
+  rpc IsUserAuthed (IsUserAuthedRequest) returns (IsUserAuthedResponse);
+}
+
+message Track {
+  string name = 1; // The Name of the Track.
+  int32 play_count = 2; // The number of times the user has played this Track.
+
+  string album_name = 3; // The name of the Album the Track appears on.
+  string artist_name = 4; // The name of the artist(s) who performed this Track.
+
+  repeated shared.Image images = 5; // The artwork(s) for this Track.
+}
+
+message Album {
+  string name = 1; // The Name of the Album.
+  int32 play_count = 2; // The number of times the user has played this Album.
+
+  string artist_name = 3; // The name of the artist(s) who performed this Album.
+
+  repeated shared.Image images = 4; // The artwork(s) for this Album.
+}
+
+message Artist {
+  string name = 1; // The Name of the Artist.
+  int32 play_count = 2; // The number of times the user has played this Artist.
+
+  repeated shared.Image images = 3; // The artwork(s) for this Artist.
+}
+
+message ArtistsRequest {
+  string user_id = 1; // The user to request Artist s info for.
+  string lang = 2; // The language to return results in. Default: en-GB.
+
+  int32 limit = 3; // The maximum number of Artist s to return.
+  shared.TimeRange time_range = 4; // The time period to filter scrobbles within.
+}
+message ArtistsResponse {
+  repeated Artist artists = 1;
+}
+
+message AlbumsRequest {
+  string user_id = 1; // The user to request Artist s info for.
+  string lang = 2; // The language to return results in. Default: en-GB.
+
+  int32 limit = 3; // The maximum number of Album s to return.
+  shared.TimeRange time_range = 4; // The time period to filter scrobbles within.
+  string artist = 5; // Which Artist s Album s to return.
+}
+message AlbumsResponse {
+  repeated Album albums = 1;
+}
+
+message TracksRequest {
+  string user_id = 1; // The user to request Track s info for.
+  string lang = 2; // The language to return results in. Default: en-GB.
+
+  int32 limit = 3; // The maximum number of Track s to return.
+  shared.TimeRange time_range = 4; // The time period to filter scrobbles within.
+  string artist = 5; // Which Artist s Track s to return. If Album is set, Artist must appear on it.
+  string album = 6; // Which Album s Track s to return. If Artist is set, they must appear on it.
+}
+message TracksResponse {
+  repeated Track tracks = 1;
+}
+
+message IsUserAuthedRequest {
+  string user_id = 1; // The user to check the auth state for.
+}
+message IsUserAuthedResponse {
+  // Whether murum is authorized to use this user's info by the Source.
+  // For services that don't implement OAuthService, this will always be true.
+  bool has_auth = 1;
+}

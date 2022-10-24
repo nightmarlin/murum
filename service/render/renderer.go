@@ -1,10 +1,10 @@
-package renderer
+package render
 
 import (
 	"image"
 	"math"
 
-	"github.com/nightmarlin/murum/layout"
+	layout "github.com/nightmarlin/murum/protos/layout/v1"
 	"github.com/nightmarlin/murum/provider"
 )
 
@@ -14,7 +14,7 @@ type Renderer interface {
 	// layout.L. Each L section will be filled with an image based on an entry from the
 	// provider.AlbumInfo slice. If len(l) > len(ai) then some regions may be left blank. If len(ai) >
 	// len(l) then not all Album Infos need to be used.
-	Render(l *layout.L, ai []provider.AlbumInfo) (image.Image, error)
+	Render(l *layout.Layout, ai []provider.AlbumInfo) (image.Image, error)
 }
 
 // GetBounds finds the bounding image.Rectangle for a set of points

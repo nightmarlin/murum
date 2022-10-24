@@ -1,0 +1,20 @@
+syntax = "proto3";
+package source;
+option go_package = "sourcev1";
+
+service OAuthService {
+  rpc GetToken (GetTokenRequest) returns (GetTokenResponse);
+  rpc StartOAuthSession (StartOAuthSessionRequest) returns (StartOAuthSessionResponse);
+}
+
+message GetTokenRequest {}
+message GetTokenResponse {
+  string token = 1; // The OAuth token returned
+  string open_url = 2; // The OAuth URL the client should open to authorize the app
+}
+
+message StartOAuthSessionRequest {
+  string token = 1; // The now-authenticated token
+  string user_id = 2;
+}
+message StartOAuthSessionResponse {}
